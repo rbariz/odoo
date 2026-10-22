@@ -116,8 +116,21 @@ class CustomerEquipment(models.Model):
 
     @api.depends("intervention_ids.state")
     def _compute_confirmed_intervention_count(self):
+        groups = self.env["customer.intervention"]._read_group(
+            domain=[
+                ("equipment_id", "in", self.ids),
+                ("state", "=", "confirmed"),
+            ],
+            groupby=["equipment_id"],
+            aggregates=["__count"],
+        )
+
+        counts = {
+            equipment.id: count
+            for equipment, count in groups
+        }
+
         for equipment in self:
-            confirmed = equipment.intervention_ids.filtered(
-                lambda intervention: intervention.state == "confirmed"
+            equipment.confirmed_intervention_count = counts.get(
+                equipment.id, 0
             )
-            equipment.confirmed_intervention_count = len(confirmed)
