@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_customer_equipment_salesman,customer.equipment salesman,model_customer_equipment,sales_team.group_sale_salesman,1,1,1,0
+access_customer_intervention_salesman,customer.intervention salesman,model_customer_intervention,sales_team.group_sale_salesman,1,1,1,0

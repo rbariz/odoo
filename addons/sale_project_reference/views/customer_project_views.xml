@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_customer_project_list" model="ir.ui.view">
+        <field name="name">customer.project.list</field>
+        <field name="model">customer.project</field>
+        <field name="arch" type="xml">
+            <list string="Customer Projects">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="partner_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_customer_project_form" model="ir.ui.view">
+        <field name="name">customer.project.form</field>
+        <field name="model">customer.project</field>
+        <field name="arch" type="xml">
+            <form string="Customer Project">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                        <field name="partner_id"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_customer_project_search" model="ir.ui.view">
+        <field name="name">customer.project.search</field>
+        <field name="model">customer.project</field>
+        <field name="arch" type="xml">
+            <search string="Search Customer Projects">
+                <field name="name" string="Project Name"/>
+                <field name="code" string="Project Code"/>
+                <separator/>
+                <filter name="archived"
+                    string="Archived"
+                    domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_by_customer"
+                            string="Customer"
+                            context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_customer_project" model="ir.actions.act_window">
+        <field name="name">Customer Projects</field>
+        <field name="res_model">customer.project</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">
+            {'search_default_group_by_customer': 1}
+        </field>
+    </record>
+
+    <menuitem id="menu_customer_project"
+              name="Customer Projects"
+              parent="sale.sale_order_menu"
+              action="action_customer_project"
+              sequence="50"
+              groups="sales_team.group_sale_salesman"/>
+</odoo>

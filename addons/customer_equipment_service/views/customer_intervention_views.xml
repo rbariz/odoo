@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_customer_intervention_list" model="ir.ui.view">
+        <field name="name">customer.intervention.list</field>
+        <field name="model">customer.intervention</field>
+        <field name="arch" type="xml">
+            <list string="Customer Interventions">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="equipment_id"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_customer_intervention_form" model="ir.ui.view">
+        <field name="name">customer.intervention.form</field>
+        <field name="model">customer.intervention</field>
+        <field name="arch" type="xml">
+            <form string="Customer Intervention">
+                <header>
+                    <button name="action_confirm"
+                            type="object"
+                            string="Confirm"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+
+                    <button name="action_cancel"
+                            type="object"
+                            string="Cancel"
+                            confirm="Are you sure you want to cancel this intervention?"
+                            invisible="state not in ['draft', 'confirmed']"/>
+
+                    <button name="action_reset_to_draft"
+                            type="object"
+                            string="Reset to Draft"
+                            invisible="state != 'cancel'"/>
+
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="draft,confirmed,cancel"
+                           readonly="True"/>
+                </header>
+
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="partner_id"
+                               readonly="context.get('lock_equipment_customer', False)"/>
+                        <field name="equipment_id"
+                               domain="[('partner_id', '=', partner_id)]"
+                               context="{'default_partner_id': partner_id}"
+                               readonly="context.get('lock_equipment_customer', False)"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_customer_intervention_search" model="ir.ui.view">
+        <field name="name">customer.intervention.search</field>
+        <field name="model">customer.intervention</field>
+        <field name="arch" type="xml">
+            <search string="Search Customer Interventions">
+                <field name="name" string="Intervention Name"/>
+                <field name="partner_id" string="Customer Name"/>
+                <field name="equipment_id" string="Equipment Name"/>
+                <separator/>
+                <filter name="state_draft"
+                    string="Draft"
+                    domain="[('state', '=', 'draft')]"/>
+                <filter name="state_confirmed"
+                    string="Confirmed"
+                    domain="[('state', '=', 'confirmed')]"/>
+                <filter name="state_cancel"
+                    string="Cancelled"
+                    domain="[('state', '=', 'cancel')]"/>
+                <group>
+                    <filter name="group_by_customer"
+                            string="Customer"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_by_status"
+                            string="Status"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_customer_intervention" model="ir.actions.act_window">
+        <field name="name">Customer Interventions</field>
+        <field name="res_model">customer.intervention</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id"
+               ref="view_customer_intervention_search"/>
+    </record>
+
+    <menuitem id="menu_customer_intervention"
+              name="Customer Interventions"
+              parent="sale.sale_order_menu"
+              action="action_customer_intervention"
+              sequence="70"
+              groups="sales_team.group_sale_salesman"/>
+</odoo>

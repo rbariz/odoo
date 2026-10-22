@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_customer_equipment_list" model="ir.ui.view">
+        <field name="name">customer.equipment.list</field>
+        <field name="model">customer.equipment</field>
+        <field name="arch" type="xml">
+            <list string="Customer Equipment">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="intervention_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_customer_equipment_form" model="ir.ui.view">
+        <field name="name">customer.equipment.form</field>
+        <field name="model">customer.equipment</field>
+        <field name="arch" type="xml">
+            <form string="Customer Equipment">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_interventions"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-wrench">
+                            <field name="intervention_count"
+                                   string="Interventions"
+                                   widget="statinfo"/>
+                        </button>
+
+                        <button name="action_view_confirmed_interventions"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-wrench">
+                            <field name="confirmed_intervention_count"
+                                   string="Confirmed Interventions"
+                                   widget="statinfo"/>
+                        </button>
+                    </div>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                        <field name="partner_id"/>
+                        <field name="active"/>
+                        <field name="intervention_count" readonly="True"/>
+                    </group>
+                    <notebook>
+                        <page name="interventions" string="Interventions">
+                            <field name="intervention_ids" readonly="True">
+                                <list create="False"
+                                      edit="False"
+                                      delete="False">
+                                    <field name="name"/>
+                                    <field name="partner_id"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_customer_equipment_search" model="ir.ui.view">
+        <field name="name">customer.equipment.search</field>
+        <field name="model">customer.equipment</field>
+        <field name="arch" type="xml">
+            <search string="Search Customer Equipment">
+                <field name="name" string="Equipment Name"/>
+                <field name="code" string="Equipment Code"/>
+                <separator/>
+                <filter name="archived"
+                    string="Archived"
+                    domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_by_customer"
+                            string="Customer"
+                            context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_customer_equipment" model="ir.actions.act_window">
+        <field name="search_view_id" ref="view_customer_equipment_search"/>
+        <field name="name">Customer Equipment</field>
+        <field name="res_model">customer.equipment</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">
+            {'search_default_group_by_customer': 1}
+        </field>
+    </record>
+
+    <menuitem id="menu_customer_equipment"
+              name="Customer Equipment"
+              parent="sale.sale_order_menu"
+              action="action_customer_equipment"
+              sequence="60"
+              groups="sales_team.group_sale_salesman"/>
+</odoo>

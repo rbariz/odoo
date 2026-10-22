@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local configuration and secrets
+odoo.conf
+.env
+.env.*
+!.env.example
+private/
+prive/
+
+# Runtime data and backups
+data/
+filestore/
+sessions/
+*.log
+*.dump
+*.backup
+
+# IDE and OS
+.vscode/
+Thumbs.db
+.DS_Store
+
+
+# Personal learning guides
+Guide-Odoo-Rachid*.md

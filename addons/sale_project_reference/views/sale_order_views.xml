@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_customer_label" model="ir.ui.view">
+        <field name="name">sale.order.form.customer.label</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='partner_details']/field[@name='partner_id']"
+                   position="attributes">
+                <attribute name="string">Client</attribute>
+            </xpath>
+        </field>
+    </record>
+        <record id="view_order_form_customer_project_ref" model="ir.ui.view">
+        <field name="name">sale.order.form.customer.project.ref</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='partner_details']/field[@name='partner_id']"
+                   position="after">
+                <field name="customer_project_id"
+                       domain="[('partner_id', '=', partner_id)]"
+                       context="{'default_partner_id': partner_id}"/>
+            </xpath>
+        </field>
+    </record>
+        <record id="view_order_list_customer_project_ref" model="ir.ui.view">
+        <field name="name">sale.order.list.customer.project.ref</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.sale_order_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="customer_project_id" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_order_search_customer_project_ref" model="ir.ui.view">
+        <field name="name">sale.order.search.customer.project.ref</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search/field[@name='partner_id']"
+                   position="after">
+                <field name="customer_project_id"
+                       string="Customer Project"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
