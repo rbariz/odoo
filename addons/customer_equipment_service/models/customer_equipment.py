@@ -1,5 +1,6 @@
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
+import operator as comparison
 
 
 class CustomerEquipment(models.Model):
@@ -36,6 +37,7 @@ class CustomerEquipment(models.Model):
     confirmed_intervention_count = fields.Integer(
         string="Confirmed Intervention Count",
         compute="_compute_confirmed_intervention_count",
+        search="_search_confirmed_intervention_count",
     )
 
     intervention_ids = fields.One2many(
@@ -134,3 +136,43 @@ class CustomerEquipment(models.Model):
             equipment.confirmed_intervention_count = counts.get(
                 equipment.id, 0
             )
+
+    def _search_confirmed_intervention_count(self, operator, value):
+        comparisons = {
+            "=": comparison.eq,
+            "!=": comparison.ne,
+            "<": comparison.lt,
+            "<=": comparison.le,
+            ">": comparison.gt,
+            ">=": comparison.ge,
+        }
+
+        compare = comparisons.get(operator)
+        if compare is None:
+            raise ValidationError(
+                "Unsupported comparison operator for the "
+                "confirmed intervention count."
+            )
+
+        groups = self.env["customer.intervention"]._read_group(
+            domain=[("state", "=", "confirmed")],
+            groupby=["equipment_id"],
+            aggregates=["__count"],
+        )
+
+        if compare(0, value):
+            excluded_ids = [
+                equipment.id
+                for equipment, count in groups
+                if not compare(count, value)
+            ]
+            return [("id", "not in", excluded_ids)]
+
+        matching_ids = [
+            equipment.id
+            for equipment, count in groups
+            if compare(count, value)
+        ]
+        return [("id", "in", matching_ids)]
+
+    

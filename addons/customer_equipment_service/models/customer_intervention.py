@@ -24,6 +24,19 @@ class CustomerIntervention(models.Model):
         ondelete="restrict",
     )
 
+    equipment_code = fields.Char(
+        string="Equipment Code",
+        related="equipment_id.code",
+        readonly=True,
+        store=False,
+    )
+
+    equipment_code_at_confirmation = fields.Char(
+        string="Equipment Code at Confirmation",
+        readonly=True,
+        copy=False,
+    )
+
     state = fields.Selection(
         selection=[
             ("draft", "Draft"),
@@ -92,6 +105,14 @@ class CustomerIntervention(models.Model):
                     "a customer equipment."
                 )
     def write(self, vals):
+        if "equipment_code_at_confirmation" in vals:
+            raise ValidationError(
+                "The equipment code at confirmation "
+                "cannot be edited directly."
+            )
+
+        target_state = vals.get("state")
+
         if "state" in vals:
             allowed_transitions = {
                 "draft": {"confirmed", "cancel"},
@@ -99,40 +120,74 @@ class CustomerIntervention(models.Model):
                 "cancel": {"draft"},
             }
 
-            target_state = vals["state"]
-
             for intervention in self:
-                current_state = intervention.state
-
-                if target_state == current_state:
+                if target_state == intervention.state:
                     continue
 
                 if target_state not in allowed_transitions.get(
-                    current_state, set()
+                    intervention.state, set()
                 ):
                     raise ValidationError(
-                        f"Transition from '{current_state}' "
+                        f"Transition from '{intervention.state}' "
                         f"to '{target_state}' is not allowed."
                     )
 
-        return super().write(vals)
+        if target_state != "confirmed":
+            return super().write(vals)
+
+        for intervention in self:
+            record_vals = dict(vals)
+
+            if intervention.state != "confirmed":
+                if "equipment_id" in vals:
+                    equipment = self.env["customer.equipment"].browse(
+                        vals["equipment_id"]
+                    )
+                else:
+                    equipment = intervention.equipment_id
+
+                record_vals["equipment_code_at_confirmation"] = (
+                    equipment.code
+                )
+
+            super(CustomerIntervention, intervention).write(record_vals)
+
+        return True
 
     @api.model_create_multi
     def create(self, vals_list):
-        default_state = None
+        defaults = self.default_get([
+            "state",
+            "equipment_code_at_confirmation",
+        ])
 
         for vals in vals_list:
-            if "state" in vals:
-                initial_state = vals["state"]
-            else:
-                if default_state is None:
-                    default_state = self.default_get(["state"]).get("state")
-
-                initial_state = default_state
+            initial_state = vals.get(
+                "state", defaults.get("state")
+            )
+            initial_code = vals.get(
+                "equipment_code_at_confirmation",
+                defaults.get("equipment_code_at_confirmation"),
+            )
 
             if initial_state != "draft":
                 raise ValidationError(
                     "An intervention must be created in draft."
                 )
 
+            if initial_code:
+                raise ValidationError(
+                    "The equipment code at confirmation "
+                    "must be empty when creating an intervention."
+                )
+
         return super().create(vals_list)
+
+    @api.onchange("partner_id")
+    def _onchange_partner_id(self):
+        if (
+            self.state == "draft"
+            and self.equipment_id
+            and self.partner_id != self.equipment_id.partner_id
+        ):
+            self.equipment_id = False

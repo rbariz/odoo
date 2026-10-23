@@ -51,6 +51,8 @@
                                domain="[('partner_id', '=', partner_id)]"
                                context="{'default_partner_id': partner_id}"
                                readonly="context.get('lock_equipment_customer', False)"/>
+                        <field name="equipment_code"/>
+                        <field name="equipment_code_at_confirmation"/>
                     </group>
                 </sheet>
             </form>

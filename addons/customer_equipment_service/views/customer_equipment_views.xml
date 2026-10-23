@@ -71,6 +71,10 @@
                 <field name="name" string="Equipment Name"/>
                 <field name="code" string="Equipment Code"/>
                 <separator/>
+                <filter name="at_least_two_confirmed"
+                        string="At Least 2 Confirmed Interventions"
+                        domain="[('confirmed_intervention_count', '&gt;=', 2)]"/>
+                <separator/>
                 <filter name="archived"
                     string="Archived"
                     domain="[('active', '=', False)]"/>
